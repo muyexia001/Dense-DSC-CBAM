@@ -8,35 +8,7 @@ from collections import OrderedDict
 from torch.hub import load_state_dict_from_url
 from torch import Tensor
 from torch.jit.annotations import List
-from torchstat import stat
-import math
 
-class Fire(nn.Module):
-    #声明Fire模块的超参数，构建Fire模块中的squeeze和expand操作，以RELU作为激活函数
-    def __init__(
-        self,
-        inplanes: int,
-        squeeze_planes: int,
-        expand1x1_planes: int,
-        expand3x3_planes: int
-    ) -> None:
-        super(Fire, self).__init__()
-        self.inplanes = inplanes
-        self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
-        self.squeeze_activation = nn.ReLU(inplace=True)
-        self.expand1x1 = nn.Conv2d(squeeze_planes, expand1x1_planes,
-                                   kernel_size=1)
-        self.expand1x1_activation = nn.ReLU(inplace=True)
-        self.expand3x3 = nn.Conv2d(squeeze_planes, expand3x3_planes,
-                                   kernel_size=3, padding=1)
-        self.expand3x3_activation = nn.ReLU(inplace=True)
-    #构建Fire模块中的前向传播过程，通过cat将1x1和3x3融合成expand操作
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.squeeze_activation(self.squeeze(x))
-        return torch.cat([
-            self.expand1x1_activation(self.expand1x1(x)),
-            self.expand3x3_activation(self.expand3x3(x))
-        ], 1)
 
 class ChannelAttentionModul(nn.Module):  
     def __init__(self, in_channel, r=16):  
